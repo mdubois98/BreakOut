@@ -14,6 +14,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate
     var ball: SKSpriteNode!
     var paddle: SKSpriteNode!
     var brick: SKSpriteNode!
+    var brickHit = 0
     
     
     override func didMove(to view: SKView)
@@ -53,6 +54,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate
         if contact.bodyA.node?.name == "brick" || contact.bodyB.node?.name == "brick"
         {
             print("brick hit")
+            brickHit += 1
+            
+            if brickHit == 3
+            {
+                //remove brick from view
+                self.brick.removeFromParent()
+            }
         }
         else if contact.bodyA.node?.name == "loseZone" || contact.bodyB.node?.name == "loseZone"
         {
@@ -121,6 +129,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate
         brick.physicsBody = SKPhysicsBody(rectangleOf: brick.size)
         brick.physicsBody?.isDynamic = false
         addChild(brick)
+        
+        //need loop for each time that goes through moves position (x, y) at end x += 15
         
         
     }
