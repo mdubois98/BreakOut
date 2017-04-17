@@ -15,6 +15,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate
     var paddle: SKSpriteNode!
     var brick: SKSpriteNode!
     var brickHit = 0
+    var countBalls = 0
+    var playLabel = SKLabelNode()
+    var livesLabel = SKLabelNode()
+    // var myField: UITextField = UITextField(frame: CGRect(x: 10, y: 10, width: 30, height: 10))
+    //var brickArray = []()
+    var playingGame = false
+    
+    let button = UIButton(frame: CGRect(x: 100, y: 600, width: 100, height: 100))
+    button.backgroundColor.UIColor.greenColor()
+    button.backgroundColor = UIColor.red
+    button.setTitle("Test Button", for: .normal)
+    button.addTarget(self, action: #selector(buttonAction), for: .touchUpInside)
+    self.view.addSubview(button)
     
     
     override func didMove(to view: SKView)
@@ -25,7 +38,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate
         createBackground()
         makeBall()
         makePaddle()
-        makeBrick()
+        makeBlock()
+       // makeBrick()
+        //removeBrick()
         makeLoseZone()
         ball.physicsBody?.applyImpulse(CGVector(dx: 10, dy: 10))
         
@@ -51,22 +66,25 @@ class GameScene: SKScene, SKPhysicsContactDelegate
     }
     func didBegin(_ contact: SKPhysicsContact)
     {
-        if contact.bodyA.node?.name == "brick" || contact.bodyB.node?.name == "brick"
+        if contact.bodyA.node?.name == "brick"
         {
             print("brick hit")
             brickHit += 1
+            contact.bodyA.node?.removeFromParent()
             
-            if brickHit == 3
-            {
-                //remove brick from view
-                self.brick.removeFromParent()
-            }
+        }
+        if contact.bodyB.node?.name == "brick"
+        {
+            print("brick hit")
+            brickHit += 1
+            contact.bodyB.node?.removeFromParent()
+            
         }
         else if contact.bodyA.node?.name == "loseZone" || contact.bodyB.node?.name == "loseZone"
         {
             print("You Lose")
         }
-        //name of ball
+        
     }
 
     func createBackground()
@@ -95,13 +113,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate
         let ballDiameter = frame.width / 20
         
         ball = SKSpriteNode(color: UIColor.cyan, size: CGSize(width: ballDiameter, height: ballDiameter))
-        ball.position = CGPoint(x: frame.midX, y: frame.midY)
+        ball.position = CGPoint(x: frame.midX + 20, y: frame.midY)
         ball.name = "ball"
         
         ball.physicsBody = SKPhysicsBody(rectangleOf: ball.size)
         ball.physicsBody?.isDynamic = true
         ball.physicsBody?.usesPreciseCollisionDetection = true
-        ball.physicsBody?.applyImpulse(CGVector(dx: 10, dy: 10))//puts ball in motion
+        ball.physicsBody?.applyImpulse(CGVector(dx: 2, dy: 2))//puts ball in motion
         ball.physicsBody?.affectedByGravity = false
         ball.physicsBody?.allowsRotation = false
         ball.physicsBody?.friction = 0
@@ -121,28 +139,95 @@ class GameScene: SKScene, SKPhysicsContactDelegate
         addChild(paddle)
 
     }
-    func makeBrick()
-    {
-        brick = SKSpriteNode(color: UIColor.magenta, size: CGSize(width: frame.width/3, height: frame.height/25))
-        brick.position = CGPoint(x: frame.midX, y: frame.maxY - 30)
-        brick.name = "brick"
-        brick.physicsBody = SKPhysicsBody(rectangleOf: brick.size)
-        brick.physicsBody?.isDynamic = false
-        addChild(brick)
-        
-        //need loop for each time that goes through moves position (x, y) at end x += 15
-        
-        
-    }
     func makeLoseZone()
     {
         
-        let loseZone = SKSpriteNode(color: UIColor.yellow, size: CGSize(width: frame.width, height:50))
+        let loseZone = SKSpriteNode(color: UIColor.black, size: CGSize(width: frame.width, height:50))
         loseZone.position = CGPoint(x: frame.midX, y: frame.minY + 25)
         loseZone.name = "loseZone"
         loseZone.physicsBody = SKPhysicsBody(rectangleOf: loseZone.size)
         loseZone.physicsBody?.isDynamic = false
         addChild(loseZone)
+    }
+        //ball count
+//        if brick.position == loseZone.position
+//        {
+//            countBalls += 1
+//            
+//        }
+//        
+//         if countBalls == 3
+//         {
+        func gameOver(winner: Bool)
+        {
+            playingGame = false
+        
+            playLabel.text = "You Lose. Tap to play again."
+        
         
     }
+    func makeBrick(xPoint: Int, yPoint: Int, brickWidth: Int, brickHeight: Int)
+    {
+       brick = SKSpriteNode(color: UIColor.magenta, size: CGSize(width: brickWidth, height: brickHeight))
+       brick.position = CGPoint(x: xPoint, y: yPoint)
+       brick.name = "brick"
+       brick.physicsBody = SKPhysicsBody(rectangleOf: brick.size)
+       brick.physicsBody?.isDynamic = false
+    addChild(brick)
+    }
+    
+   func makeBlock()
+   {
+        //need loop for each time that goes through moves position (x, y) at end x += 15
+        
+        var xPosition = Int (frame.midX - (frame.width / 2))
+        var yPosition = 150
+        // var count = 0
+        var blockWidth = (Int)((frame.width - 60) / 5)
+        var blockHeight = 20
+
+        
+        for rows in 1...3
+        {
+            for columns in 1...5
+            {
+                makeBrick(xPoint: xPosition, yPoint: yPosition, brickWidth: blockWidth, brickHeight: blockHeight)
+                xPosition += (blockWidth + 10)
+            }
+            xPosition = Int(frame.midX - (frame.width / 2))
+            yPosition += (blockHeight + 10)
+            
+                
+            
+            }
+    
+            
+        }
+    func makeLabel()
+    {
+        playLabel.position = CGPoint(x: frame.midX,y: frame.midY - 50)
+        playLabel.name = "play"
+        addChild(playLabel)
+        
+        livesLabel.fontSize = 18
+        livesLabel.fontColor = UIColor.black
+        livesLabel.fontName = "Arial"
+        livesLabel.position = CGPoint(x: frame.minX + 50, y: frame.minY + 18)
+        addChild(livesLabel)
+    }
+    func buttonAction(sender: UIButton!)
+    {
+        print("Button tapped")
+        
+        ball.physicsBody?.isDynamic = true
+        ball.physicsBody?.applyImpulse(CGVector(dx: 5, dy: 5))
+    }
+
+    
+
 }
+
+
+    
+    
+    
